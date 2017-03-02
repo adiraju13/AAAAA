@@ -10,9 +10,9 @@ path / ProxyHandler {
 	# host www.boost.org;
 	# host www.yahoo.com;
 	# host www.ucla.edu;
-	# host ucla.edu;
+	 host ucla.edu;
 	# host www.google.com;
-	 host google.com;
+	# host google.com;
 	# port 2020;
 }
 
