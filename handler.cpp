@@ -331,7 +331,8 @@ std::unique_ptr<Response> ProxyHandler::get_response(std::string path, std::stri
     // allow us to treat all data up until the EOF as the content.
     boost::asio::streambuf request;
     std::ostream request_stream(&request);
-    std::string request_str = "GET " + path + " HTTP/1.0\r\n" + "Host: " + host_address + "\r\n\r\n";
+    std::string request_str = "GET " + path + " HTTP/1.0\r\n\r\n";
+
     request_stream << request_str;
 
     std::cout << "REQUEST: " << request_str << std::endl;
@@ -362,16 +363,15 @@ std::unique_ptr<Response> ProxyHandler::get_response(std::string path, std::stri
     }
 
     // Handle redirect
-    if (!redirect_path.empty()) {
-        std::cout << "REDIRECT: " << redirect_path << std::endl;
+    if ((response_ptr->GetStatus() == 302) && !redirect_path.empty()) {
         // Find whether rediret path is http or https
         std::string http_path = redirect_path.substr(1, redirect_path.find(":") - 1);
-        std::cout << http_path << std::endl;
         // Assume redirect location has format "http://www.something.com/"
-        redirect_path = redirect_path.substr(redirect_path.find("w"));
+        redirect_path = redirect_path.substr(redirect_path.find("//") + 2);
+
         // Find "www.something.com" btween the slashes
         redirect_path = redirect_path.substr(0, redirect_path.find("/"));
-
+        
         // Redirect can be "https" this requires port 443 instead of 80
         std::string host_ = redirect_path;
 
@@ -379,7 +379,7 @@ std::unique_ptr<Response> ProxyHandler::get_response(std::string path, std::stri
         if (http_path == "https")
             return get_response(path, host_, "443");
         else    // regular http requests are on port 80
-            return get_response(path, host_, port_num);
+            return get_response(path, host_, "80");
     }
 
     // Read until EOF, writing data to output as we go.
