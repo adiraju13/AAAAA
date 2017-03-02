@@ -289,8 +289,6 @@ RequestHandler::Status ProxyHandler::Init(const std::string& uri_prefix, const N
             m_port = config.statements_[i]->tokens_[1];
         }
     }
-    std::cout << "host: " << m_host << std::endl;
-    std::cout << "port: " << m_port << std::endl;
 
     this->uri_prefix = uri_prefix;
 
@@ -341,7 +339,6 @@ std::unique_ptr<Response> ProxyHandler::get_response(std::string path, std::stri
 
     request_stream << request_str;
 
-    std::cout << "REQUEST: " << request_str << std::endl;
     // Send the request.
     boost::asio::write(socket, request);
 
@@ -395,7 +392,7 @@ std::unique_ptr<Response> ProxyHandler::get_response(std::string path, std::stri
                 break;
         } 
 
-    // Read the rest of the resopnse which will be the response body
+    // Read the rest of the response which will be the response body
     // Add it with the headers we got before to form a complete response
     std::string body( (std::istreambuf_iterator<char>(&response)), std::istreambuf_iterator<char>() );
     std::string whole_response = s + body;
@@ -419,7 +416,10 @@ RequestHandler::Status ProxyHandler::HandleRequest(const Request& request, Respo
     std::string request_uri = request.uri();
     std::unique_ptr<Response> returned_ptr = get_response(request_uri, m_host, m_port);
 
-    if (returned_ptr != nullptr) {
+    if (returned_ptr == nullptr) {
+        return RequestHandler::FAIL;
+    }
+    else {
         response->SetStatus(returned_ptr->GetStatus());
         for (auto &header: returned_ptr->GetHeaders()) {
             response->AddHeader(header.first, header.second);

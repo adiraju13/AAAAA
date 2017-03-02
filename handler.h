@@ -162,8 +162,6 @@ public:
 
     std::unique_ptr<Response> get_response(std::string path, std::string host, std::string port);
 
-    size_t get_type(std::string input_string);
-
     void SetHost(std::string host); // for ease of testing
 
 private:
