@@ -76,6 +76,7 @@ test:
 	./http_response_test
 	./response_parser_test
 	python2 test/integration_multithread_test.py
+	python2 proxy_test.py
 
 clean:
 	# Note: be careful of make clean removing *_test

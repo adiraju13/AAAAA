@@ -32,7 +32,7 @@ TEST(ResponseParserTest, ResponseParseTest) {
     for(std::vector<std::pair<std::string, std::string>>::const_iterator it = resp_headers.begin(); it != resp_headers.end(); it++) {
     	std::string name = it->first; 
     	std::string value = it->second;
-        headers[i] = name + ":" + value;
+        headers[i] = name + ": " + value;
         i++;
     }
 

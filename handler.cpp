@@ -314,6 +314,8 @@ std::unique_ptr<Response> ProxyHandler::get_response(std::string path, std::stri
     // Get a list of endpoints corresponding to the server name.
     tcp::resolver resolver(io_service);
     tcp::resolver::query query(host_address, port_num);
+    std::cout << host_address << std::endl;
+    std::cout << port_num << std::endl;
     tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
     tcp::resolver::iterator end;
 
@@ -415,7 +417,7 @@ RequestHandler::Status ProxyHandler::HandleRequest(const Request& request, Respo
 
     // Pass in the request uri
     std::string request_uri = request.uri();
-    std::unique_ptr<Response> returned_ptr = get_response(request_uri, m_host, "80");
+    std::unique_ptr<Response> returned_ptr = get_response(request_uri, m_host, m_port);
 
     if (returned_ptr != nullptr) {
         response->SetStatus(returned_ptr->GetStatus());

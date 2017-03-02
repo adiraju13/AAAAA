@@ -43,7 +43,7 @@ std::unique_ptr<Response> ResponseParser::Parse(std::string response) {
 
 			// Get header value up to the first "\r\n"
 			size_t end = header_line.find("\r\n");
-			std::string header_value = header_line.substr(colon + 1, end);
+			std::string header_value = header_line.substr(colon + 2, end);
 
 			// Add headers into response vector
 			output_response->AddHeader(header_name, header_value);
