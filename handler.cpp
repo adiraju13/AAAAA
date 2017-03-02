@@ -273,4 +273,158 @@ RequestHandler::Status StatusHandler::HandleRequest(const Request& request, Resp
     return RequestHandler::PASS;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////// Proxy Handler /////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
 
+RequestHandler::Status ProxyHandler::Init(const std::string& uri_prefix, const NginxConfig& config) {
+
+    for (unsigned int i = 0; i < config.statements_.size(); i++){
+        // get the root from the child block
+        if (config.statements_[i]->tokens_[0] == "host" && config.statements_[i]->tokens_.size() == 2){
+            m_host = config.statements_[i]->tokens_[1];
+        }
+        else if (config.statements_[i]->tokens_[0] == "port" && config.statements_[i]->tokens_.size() == 2){
+            std::cout << "port: " << m_port << std::endl; 
+            m_port = config.statements_[i]->tokens_[1];
+        }
+    }
+
+    this->uri_prefix = uri_prefix;
+
+    return RequestHandler::PASS;
+}
+
+void ProxyHandler::SetHost(std::string host) {
+    m_host = host; 
+}
+
+std::unique_ptr<Response> ProxyHandler::get_response(std::string path, std::string host_address, std::string port_num)
+{
+
+  using boost::asio::ip::tcp;
+
+  try
+  {
+    boost::asio::io_service io_service;
+    boost::system::error_code error;
+
+    // Get a list of endpoints corresponding to the server name.
+    tcp::resolver resolver(io_service);
+    tcp::resolver::query query(host_address, port_num);
+    std::cout << host_address << std::endl;
+    std::cout << port_num << std::endl;
+    tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+    tcp::resolver::iterator end;
+
+    // Try each endpoint until we successfully establish a connection.
+    tcp::socket socket(io_service);
+    error = boost::asio::error::host_not_found;
+    while (error && endpoint_iterator != end)
+    {
+      socket.close();
+      socket.connect(*endpoint_iterator++, error);
+    }
+    if (error) {
+      std::cout << "Error connecting to host: " << host_address << std::endl;
+      return nullptr;
+    }
+
+    // Form the request. We specify the "Connection: close" header so that the
+    // server will close the socket after transmitting the response. This will
+    // allow us to treat all data up until the EOF as the content.
+    boost::asio::streambuf request;
+    std::ostream request_stream(&request);
+    std::string request_str = "GET " + path + " HTTP/1.0\r\n\r\n";
+
+    request_stream << request_str;
+
+    // Send the request.
+    boost::asio::write(socket, request);
+
+    // Read the response status line. The response streambuf will automatically
+    // grow to accommodate the entire line. The growth may be limited by passing
+    // a maximum size to the streambuf constructor.
+    boost::asio::streambuf response;
+    std::unique_ptr<Response> response_ptr;
+
+    // Read the response headers, which are terminated by a blank line.
+    boost::asio::read_until(socket, response, "\r\n\r\n", error);
+    if (error) {
+        std::cout << "Error reading until end of response\n";
+        return nullptr;
+    }
+
+    std::string s( (std::istreambuf_iterator<char>(&response)), std::istreambuf_iterator<char>() );
+    response_ptr = response_parser.Parse(s);
+
+    // Check if there is a "Location" header, signaling redirect
+    std::string redirect_path = "";
+    for (auto &header: response_ptr->GetHeaders()) {
+        if (header.first == "Location") // Get the redirect path
+            redirect_path = header.second;
+    }
+
+    // Handle redirect
+    if ((response_ptr->GetStatus() == 302) && !redirect_path.empty()) {
+        // Find whether rediret path is http or https
+        std::string http_path = redirect_path.substr(1, redirect_path.find(":") - 1);
+        // Assume redirect location has format "http://www.something.com/"
+        redirect_path = redirect_path.substr(redirect_path.find("//") + 2);
+
+        // Find "www.something.com" btween the slashes
+        redirect_path = redirect_path.substr(0, redirect_path.find("/"));
+        
+        // Redirect can be "https" this requires port 443 instead of 80
+        std::string host_ = redirect_path;
+
+        // Set port of https to 443 so it doesn't loop
+        if (http_path == "https")
+            return get_response(path, host_, "443");
+        else    // regular http requests are on port 80
+            return get_response(path, host_, "80");
+    }
+
+    // Read until EOF, writing data to output as we go.
+    while (boost::asio::read(socket, response,
+          boost::asio::transfer_at_least(1), error)){
+            if (error)
+                break;
+        } 
+
+    // Read the rest of the response which will be the response body
+    // Add it with the headers we got before to form a complete response
+    std::string body( (std::istreambuf_iterator<char>(&response)), std::istreambuf_iterator<char>() );
+    std::string whole_response = s + body;
+
+    // Set the response body to only the body, without the headers
+    response_ptr->SetBody(whole_response.substr(whole_response.find("\r\n\r\n") + 4));
+
+    return response_ptr;
+  }
+  catch (std::exception& e)
+  {
+    std::cout << "Exception: " << e.what() << "\n";
+  }
+  return nullptr;
+}
+
+RequestHandler::Status ProxyHandler::HandleRequest(const Request& request, Response* response) {
+    std::cout << "\nProxyHandler::HandleRequest" << std::endl;
+
+    // Pass in the request uri
+    std::string request_uri = request.uri();
+    std::unique_ptr<Response> returned_ptr = get_response(request_uri, m_host, m_port);
+
+    if (returned_ptr == nullptr) {
+        return RequestHandler::FAIL;
+    }
+    else {
+        response->SetStatus(returned_ptr->GetStatus());
+        for (auto &header: returned_ptr->GetHeaders()) {
+            response->AddHeader(header.first, header.second);
+        }
+        response->SetBody(returned_ptr->GetBody());
+    }
+    return RequestHandler::PASS;
+}

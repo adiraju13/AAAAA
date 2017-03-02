@@ -70,3 +70,23 @@ TEST(StaticHandlerTest, StaticClassTest){
 
 }
 
+TEST(ProxyHandlerTest, ProxyClassTest) {
+  std::unique_ptr<ProxyHandler> handler(new ProxyHandler); 
+
+  handler->SetHost("ucla.edu"); 
+
+  std::string str_req = "GET / HTTP/1.0\r\n\r\n";
+  auto req = Request::Parse(str_req); 
+  Response res; 
+
+  RequestHandler::Status s = handler->HandleRequest(*req, &res);
+  EXPECT_EQ(s, RequestHandler::PASS);
+
+  auto output = handler->get_response("/", "ucla.edu", "80");
+  std::string proxy_output = output->ToString();
+  std::string reg_output = output->ToString();
+
+  proxy_output.substr(proxy_output.find("\r\n\r\n"));
+  reg_output.substr(reg_output.find("\r\n\r\n"));
+  EXPECT_EQ(proxy_output, reg_output);
+}
