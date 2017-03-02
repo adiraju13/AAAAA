@@ -4,6 +4,7 @@
 #include <boost/asio.hpp>
 #include "http_response.h"
 #include "http_request.h"
+#include "response_parser.h"
 #include "config_parser/config_parser.h"
 #include <vector>
 
@@ -148,5 +149,34 @@ private:
 };
 
 REGISTER_REQUEST_HANDLER(StatusHandler);
+
+class ProxyHandler : public RequestHandler {
+public:
+    ProxyHandler() {}
+
+    Status Init(const std::string& uri_prefix,
+                const NginxConfig& config);
+
+    Status HandleRequest(const Request& request,
+                         Response* response);
+
+    std::unique_ptr<Response> get_response(std::string path, std::string host, std::string port);
+
+    size_t get_type(std::string input_string);
+
+private:
+    //uri_prefix specified by the config file exposed to users
+    std::string uri_prefix;
+    
+    std::string m_host;
+
+    std::string m_port = "80";
+
+    ResponseParser response_parser;
+
+};
+
+REGISTER_REQUEST_HANDLER(ProxyHandler);
+
 
 #endif

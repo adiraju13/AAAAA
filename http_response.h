@@ -19,7 +19,8 @@ class Response {
 public:
     enum ResponseCode {
         OK = 200,
-        NOT_FOUND = 404
+        NOT_FOUND = 404,
+        REDIRECT = 302
     };
 
     void SetStatus(const ResponseCode response_code);
@@ -29,6 +30,10 @@ public:
     // returns string representation of response
     std::string ToString();
 
+    ResponseCode GetStatus() { return status_code; }
+    std::vector<std::pair<std::string, std::string>> GetHeaders() { return headers; }
+    std::string GetBody() { return message_body; }
+    
 private:
     // HTTP headers from HTTP specification
     const std::string HTTP_VER = "HTTP/1.1";
