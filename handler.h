@@ -164,6 +164,8 @@ public:
 
     size_t get_type(std::string input_string);
 
+    void SetHost(std::string host); // for ease of testing
+
 private:
     //uri_prefix specified by the config file exposed to users
     std::string uri_prefix;

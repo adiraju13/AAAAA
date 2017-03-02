@@ -297,6 +297,10 @@ RequestHandler::Status ProxyHandler::Init(const std::string& uri_prefix, const N
     return RequestHandler::PASS;
 }
 
+void ProxyHandler::SetHost(std::string host) {
+    m_host = host; 
+}
+
 std::unique_ptr<Response> ProxyHandler::get_response(std::string path, std::string host_address, std::string port_num)
 {
 
