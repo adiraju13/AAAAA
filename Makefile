@@ -77,7 +77,7 @@ test:
 	./response_parser_test
 	python2 integration_multithread_test.py
 	python2 proxy_test.py
-
+	python2 nthreads_test.py 5
 clean:
 	# Note: be careful of make clean removing *_test
 	rm -f *.o *.gcno *.gcov *.gcda web-server *_test
