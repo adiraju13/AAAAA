@@ -1,4 +1,0 @@
-EchoHandler /echo
-ProxyHandler /
-StaticHandler /static
-StatusHandler /status
