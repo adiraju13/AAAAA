@@ -48,7 +48,11 @@ handler.o: handler.h handler.cpp
 response_parser.o: response_parser.h response_parser.cpp
 	g++ -c response_parser.cpp $(LDFLAGS) $(CXXFLAGS)
 
-.PHONY: clean, all, test
+.PHONY: clean, all, test, deploy
+
+deploy:
+	make
+	./deploy.sh
 
 test:
 	# Build web-server for integration test
