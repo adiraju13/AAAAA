@@ -6,5 +6,4 @@ RUN apt-get install -y g++
 WORKDIR /opt/webserver
 COPY . /opt/webserver
 RUN make clean && make
-EXPOSE 80:80
-CMD ["./web-server", "simple_config"]
+CMD tar -cf - web-server
