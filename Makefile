@@ -1,4 +1,4 @@
-LDFLAGS=-pthread -lboost_system -lboost_thread
+LDFLAGS=-static-libgcc -static-libstdc++ -pthread -Wl,-Bstatic -lboost_system -lboost_thread
 CXXFLAGS=-Wall -Werror -std=c++11 -fprofile-arcs -ftest-coverage
 
 # directory locations
