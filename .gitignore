@@ -8,4 +8,5 @@ bin/*
 *.gcda
 *.gcno
 *.a
+*.pem
 *_test
