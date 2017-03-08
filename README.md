@@ -3,6 +3,8 @@ A webserver written in C++ using the Boost API. This webserver supports a common
 RequestHandler interface/abstract base class that can be used to easily implement
 any handler.
 
+Our server can be found deployed at ec2-52-37-251-244.us-west-2.compute.amazonaws.com
+
 **Authors**:
 * Ryan Peterman
 * Aditya Raju
