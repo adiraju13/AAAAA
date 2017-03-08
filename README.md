@@ -6,9 +6,13 @@ any handler.
 Our server can be found deployed at ec2-52-37-251-244.us-west-2.compute.amazonaws.com
 
 / serves the reverse proxy that goes to ucla.edu
+
 /static serves static files (test.jpg, test.html, index.html)
+
 /status serves the status of the server, like what requests came in and what possible handlers there are
+
 /echo is basically causes our server to act as an echo server
+
 
 **Authors**:
 * Ryan Peterman
