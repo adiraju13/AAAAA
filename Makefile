@@ -51,7 +51,6 @@ response_parser.o: response_parser.h response_parser.cpp
 .PHONY: clean, all, test, deploy
 
 deploy:
-	make
 	./deploy.sh
 
 test:
