@@ -6,6 +6,7 @@
 #include "http_request.h"
 #include "response_parser.h"
 #include "config_parser/config_parser.h"
+#include "cpp-markdown/src/markdown.h"
 #include <vector>
 
 // Represents the parent of all request handlers. Implementation
