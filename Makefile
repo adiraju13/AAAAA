@@ -3,6 +3,7 @@ CXXFLAGS=-Wall -Werror -std=c++11 -fprofile-arcs -ftest-coverage
 
 # directory locations
 CP_LOC=config_parser/
+MARKDOWN_LOC=cpp-markdown/
 GTEST_DIR=googletest/googletest
 GMOCK_DIR=googletest/googlemock
 
@@ -18,8 +19,8 @@ RESPONSE_PARSER_TEST=test/response_parser_test.cpp
 
 OBJECT_FILES=http_request.o http_response.o utils.o config_parser.o handler.o response_parser.o
 
-all: server.o session.o main.o config_parser.o utils.o http_request.o http_response.o handler.o response_parser.o
-	g++ -o web-server main.o server.o session.o config_parser.o utils.o http_request.o http_response.o handler.o response_parser.o $(LDFLAGS) $(CXXFLAGS)
+all: server.o session.o main.o config_parser.o markdown.o markdown-tokens.o utils.o http_request.o http_response.o handler.o response_parser.o
+	g++ -o web-server main.o server.o session.o config_parser.o markdown.o markdown-tokens.o utils.o http_request.o http_response.o handler.o response_parser.o $(LDFLAGS) $(CXXFLAGS) -lboost_regex -lboost_iostreams
 
 server.o: server.cpp server.h
 	g++ -c server.cpp $(LDFLAGS) $(CXXFLAGS)
@@ -29,6 +30,12 @@ session.o: session.cpp session.h
 
 config_parser.o: $(CP_LOC)config_parser.cc $(CP_LOC)config_parser.h
 	g++ -c $(CP_LOC)config_parser.cc -g $(CXXFLAGS)
+
+markdown.o: $(MARKDOWN_LOC)markdown.cpp $(MARKDOWN_LOC)markdown.h
+	g++ -c $(MARKDOWN_LOC)markdown.cpp -g $(CXXFLAGS)
+
+markdown-tokens.o: $(MARKDOWN_LOC)markdown-tokens.cpp $(MARKDOWN_LOC)markdown-tokens.h
+	g++ -c $(MARKDOWN_LOC)markdown-tokens.cpp -g $(CXXFLAGS)
 
 utils.o: utils.cpp utils.h
 	g++ -c utils.cpp $(LDFLAGS) $(CXXFLAGS)

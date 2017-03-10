@@ -121,9 +121,18 @@ RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Resp
 
     // save content_type header based on requested file extension
     std::string content_type = get_content_type(abs_path);
-
     // raw byte array
     std::string to_send = read_file(abs_path);
+
+    // handling markdown
+    if (content_type == "markdown") {
+      markdown::Document d;
+      d.read(to_send);
+
+      // sets the content_type back to "text/html" because "markdown" is not content type
+      content_type = "text/html";
+    }
+
     std::cout << "Serving file from: " << abs_path << std::endl;
 
     response->SetStatus(Response::OK);
@@ -165,6 +174,10 @@ std::string StaticHandler::get_content_type(std::string filename) {
         content_type = "image/jpeg";
     } else if (ext == "pdf") {
         content_type = "application/pdf";
+
+    // using this existing function for .md files. Will set back to "text/html" in the function that makes the call to this one
+    } else if (ext == "md") {
+        content_type = "markdown";
     } else {
         content_type = "text/plain";
     }
