@@ -1,5 +1,5 @@
 # This is a comment
-port 2020;
+port 80;
 num_threads 5;
 
 path /static StaticHandler {
