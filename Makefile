@@ -3,7 +3,7 @@ CXXFLAGS=-Wall -Werror -std=c++11 -fprofile-arcs -ftest-coverage
 
 # directory locations
 CP_LOC=config_parser/
-MARKDOWN_LOC=cpp-markdown/src/
+MARKDOWN_LOC=cpp-markdown/
 GTEST_DIR=googletest/googletest
 GMOCK_DIR=googletest/googlemock
 
