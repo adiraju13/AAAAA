@@ -124,13 +124,17 @@ RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Resp
     // raw byte array
     std::string to_send = read_file(abs_path);
 
-    // handling markdown
-    if (content_type == "markdown") {
+    // if markdown file extension
+    if (abs_path.size() > 3 && abs_path.substr(abs_path.size() - 3, 3) == ".md") {
+      // read in .md file
       markdown::Document d;
       d.read(to_send);
 
-      // sets the content_type back to "text/html" because "markdown" is not content type
-      content_type = "text/html";
+      // write out as .html
+      std::ostringstream output;
+      d.write(output);
+
+      to_send = output.str();
     }
 
     std::cout << "Serving file from: " << abs_path << std::endl;
@@ -168,16 +172,12 @@ std::string StaticHandler::get_content_type(std::string filename) {
     std::string content_type;
 
     // based on ext decide content_type header
-    if (ext == "html") {
+    if (ext == "html" || ext == "md") {
         content_type = "text/html";
     } else if (ext == "jpg") {
         content_type = "image/jpeg";
     } else if (ext == "pdf") {
         content_type = "application/pdf";
-
-    // using this existing function for .md files. Will set back to "text/html" in the function that makes the call to this one
-    } else if (ext == "md") {
-        content_type = "markdown";
     } else {
         content_type = "text/plain";
     }
@@ -298,7 +298,7 @@ RequestHandler::Status ProxyHandler::Init(const std::string& uri_prefix, const N
             m_host = config.statements_[i]->tokens_[1];
         }
         else if (config.statements_[i]->tokens_[0] == "port" && config.statements_[i]->tokens_.size() == 2){
-            std::cout << "port: " << m_port << std::endl; 
+            std::cout << "port: " << m_port << std::endl;
             m_port = config.statements_[i]->tokens_[1];
         }
     }
@@ -309,7 +309,7 @@ RequestHandler::Status ProxyHandler::Init(const std::string& uri_prefix, const N
 }
 
 void ProxyHandler::SetHost(std::string host) {
-    m_host = host; 
+    m_host = host;
 }
 
 std::unique_ptr<Response> ProxyHandler::get_response(std::string path, std::string host_address, std::string port_num)
@@ -387,7 +387,7 @@ std::unique_ptr<Response> ProxyHandler::get_response(std::string path, std::stri
 
         // Find "www.something.com" btween the slashes
         redirect_path = redirect_path.substr(0, redirect_path.find("/"));
-        
+
         // Redirect can be "https" this requires port 443 instead of 80
         std::string host_ = redirect_path;
 
@@ -403,7 +403,7 @@ std::unique_ptr<Response> ProxyHandler::get_response(std::string path, std::stri
           boost::asio::transfer_at_least(1), error)){
             if (error)
                 break;
-        } 
+        }
 
     // Read the rest of the response which will be the response body
     // Add it with the headers we got before to form a complete response
