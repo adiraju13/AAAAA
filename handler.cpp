@@ -316,7 +316,24 @@ std::unique_ptr<Response> ProxyHandler::get_response(std::string path, std::stri
 {
 
   using boost::asio::ip::tcp;
-
+  //if we hit the cache
+  /*
+  if (cache.count(path)){
+    std::cout << "CACHE-HIT" << std::endl;
+    std::pair <time_t, std::string> cache_value;
+    time_t time_now;
+    time(&time_now);
+    //value of cache is still valid
+    if (time_now < cache_value.first){
+        std::unique_ptr<Response> response_ptr;
+        int pos_end_of_headers = cache_value.second.find("/r/n/r/n");
+        std::string headers = cache_value.second.substr(0, pos_end_of_headers);
+        response_ptr = response_parser.Parse(headers);
+        response_ptr->SetBody(cache_value.second.substr(pos_end_of_headers + 4));
+        return response_ptr;
+    }
+  }
+  */
   try
   {
     boost::asio::io_service io_service;
@@ -372,10 +389,18 @@ std::unique_ptr<Response> ProxyHandler::get_response(std::string path, std::stri
     response_ptr = response_parser.Parse(s);
 
     // Check if there is a "Location" header, signaling redirect
+    bool cache_enabled = false;
+    int time_to_cache = 0;
     std::string redirect_path = "";
     for (auto &header: response_ptr->GetHeaders()) {
         if (header.first == "Location") // Get the redirect path
             redirect_path = header.second;
+        if (header.first == "Cache-Control"){
+            std::pair<bool, int> cache_control_info = check_cache_control_field(header.second);
+            cache_enabled = cache_control_info.first;
+            time_to_cache = cache_control_info.second;
+            std::cout << "time to cache = " << time_to_cache << std::endl;
+        }
     }
 
     // Handle redirect
@@ -412,7 +437,9 @@ std::unique_ptr<Response> ProxyHandler::get_response(std::string path, std::stri
 
     // Set the response body to only the body, without the headers
     response_ptr->SetBody(whole_response.substr(whole_response.find("\r\n\r\n") + 4));
-
+    if (cache_enabled){
+        add_to_cache(path, time_to_cache, whole_response);
+    }
     return response_ptr;
   }
   catch (std::exception& e)
@@ -441,3 +468,40 @@ RequestHandler::Status ProxyHandler::HandleRequest(const Request& request, Respo
     }
     return RequestHandler::PASS;
 }
+
+void ProxyHandler::add_to_cache(std::string path, int time_to_cache, std::string whole_response){
+    time_t expiration_time;
+    time(&expiration_time);
+    expiration_time += time_to_cache;
+    cache.push_back(std::make_pair(path, whole_response));
+    std::cout << "made it to here" << std::endl;
+
+}
+
+std::pair <bool, int> ProxyHandler::check_cache_control_field(std::string field){
+
+    if (field.find("public") == std::string::npos || field.find("no_cache") != std::string::npos){
+        std::pair<bool, int> error_pair;
+        error_pair.first = false;
+        error_pair.second = 0;
+        return error_pair;
+    }
+   
+    //check if max_age is given
+    int time_to_cache = 0;
+    if (field.find("max-age") == std::string::npos){
+        time_to_cache = 30000000;
+    }
+    else{
+        
+        int pos = field.find("max-age=");
+        std::string t_t_c = field.substr(pos+8);
+        t_t_c = t_t_c.substr(0, t_t_c.find(','));
+        time_to_cache = stoi(t_t_c);
+    }
+
+    std::pair<bool, int> to_return;
+    to_return.first = true;
+    to_return.second = time_to_cache;
+    return to_return;
+} 

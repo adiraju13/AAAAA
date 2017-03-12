@@ -8,6 +8,9 @@
 #include "config_parser/config_parser.h"
 #include "cpp-markdown/markdown.h"
 #include <vector>
+#include <unordered_map>
+#include <time.h>
+#include "ValueOfMap.h"
 
 // Represents the parent of all request handlers. Implementation
 // is long lived and created at server constrution.
@@ -174,6 +177,12 @@ private:
     std::string m_port = "80";
 
     ResponseParser response_parser;
+
+    std::vector<std::pair<std::string, std::string>> cache;
+
+    void add_to_cache(std::string path, int time_to_cache, std::string whole_response);
+
+    std::pair<bool, int> check_cache_control_field(std::string field);
 
 };
 

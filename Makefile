@@ -49,8 +49,8 @@ http_request.o: http_request.h http_request.cpp
 http_response.o: http_response.h http_response.cpp
 	g++ -c http_response.cpp $(LDFLAGS) $(CXXFLAGS)
 
-handler.o: handler.h handler.cpp
-	g++ -c handler.cpp $(LDFLAGS) $(CXXFLAGS)
+handler.o: handler.h handler.cpp ValueOfMap.h
+	g++ -c handler.cpp ValueOfMap.h $(LDFLAGS) $(CXXFLAGS)
 
 response_parser.o: response_parser.h response_parser.cpp
 	g++ -c response_parser.cpp $(LDFLAGS) $(CXXFLAGS)
