@@ -441,3 +441,70 @@ RequestHandler::Status ProxyHandler::HandleRequest(const Request& request, Respo
     }
     return RequestHandler::PASS;
 }
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////// Location Handler /////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+
+RequestHandler::Status LocationHandler::Init(const std::string& uri_prefix, const NginxConfig& config) {
+    return RequestHandler::PASS;
+}
+
+RequestHandler::Status LocationHandler::HandleRequest(const Request& request, Response* response) {
+    std::ifstream infile("location_log.txt");
+
+    if (!infile.is_open())
+        return RequestHandler::FAIL;
+
+    std::string ip_address;
+    while (infile >> ip_address)
+    {
+        ProxyHandler ph;
+        std::unique_ptr<Response> returned_ptr = ph.get_response("/" + ip_address + "/geo", "ipinfo.io" ,"80");
+        //std::cout << returned_ptr->GetBody() << std::endl;
+        update_map(returned_ptr->GetBody());
+    }
+
+    infile.close();
+
+    std::string response_body = parse_map();
+
+    response->SetStatus(Response::OK);
+    response->AddHeader("Content-Length", std::to_string(response_body.size()));
+    response->AddHeader("Content-Type", "text/plain");
+    response->SetBody(response_body);
+
+    return RequestHandler::PASS;
+}
+
+std::string LocationHandler::parse_map(){
+    std::string output = "";
+    for (auto &pairing: location_frequency){
+        output += pairing.first + ": ";
+        for (int i = 0; i < pairing.second; i++)
+            output+= "*";
+        output+= "\n";
+    }
+    return output;
+} 
+
+void LocationHandler::update_map(std::string response_body)
+{
+    std::size_t pos = response_body.find("region");
+    if (pos != std::string::npos){
+        std::cout << response_body << std::endl;
+
+        unsigned int pos_end = response_body.find('\n', pos+9);
+        std::string state = response_body.substr(pos + 9, pos_end - pos + 9);
+        state.erase(std::remove(state.begin(), state.end(), '\"'), state.end());
+        state.erase(std::remove(state.begin(), state.end(), ','), state.end());
+        if (location_frequency.count(state)){
+            location_frequency[state] = location_frequency[state] + 1;
+        }
+        else{
+            location_frequency[state] = 1;
+         }
+    }
+}
+

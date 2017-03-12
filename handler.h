@@ -8,6 +8,7 @@
 #include "config_parser/config_parser.h"
 #include "cpp-markdown/markdown.h"
 #include <vector>
+#include <unordered_map>
 
 // Represents the parent of all request handlers. Implementation
 // is long lived and created at server constrution.
@@ -36,6 +37,7 @@ class RequestHandler {
   // HTTP code 500.
   virtual Status HandleRequest(const Request& request,
                                Response* response) = 0;
+
 
   Status NotFoundHandler(const Request& request, Response* response);
 };
@@ -178,6 +180,24 @@ private:
 };
 
 REGISTER_REQUEST_HANDLER(ProxyHandler);
+
+class LocationHandler : public RequestHandler {
+public:
+    LocationHandler() {}
+    Status Init(const std::string& uri_prefix,
+                const NginxConfig& config);
+
+    Status HandleRequest(const Request& request,
+                         Response* response);
+
+private:
+  std::unordered_map<std::string, int> location_frequency;
+  void update_map(std::string response);
+  std::string parse_map();
+
+};
+
+REGISTER_REQUEST_HANDLER(LocationHandler);
 
 
 #endif

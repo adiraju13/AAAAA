@@ -49,9 +49,13 @@ int session::handle_request(){
     error_handler->HandleRequest(*request, &response);
   }
 
+  mutex.lock();
   //calls a function to perform the logging to the log file
   log_request_response(request->uri(), response.ToString());
-
+  //calls a function to perform the ip_address logging
+  log_location(socket().remote_endpoint().address().to_string());
+  
+  mutex.unlock();
 
   write_string(response.ToString());
   return 0;
@@ -93,6 +97,16 @@ void session::log_request_response(std::string request_url, std::string response
   std::ofstream ofile;
   ofile.open("request_response_log.txt", std::ofstream::out | std::ofstream::app);
   std::string to_write = request_url + " " + response_code + "\n";
+  ofile.write(to_write.c_str(), to_write.length());
+  ofile.close();
+}
+
+//This code logs a request and its corresponding response code into the log text file
+void session::log_location(std::string ip_address)
+{
+  std::ofstream ofile;
+  ofile.open("location_log.txt", std::ofstream::out | std::ofstream::app);
+  std::string to_write = ip_address + "\n";
   ofile.write(to_write.c_str(), to_write.length());
   ofile.close();
 }
