@@ -5,5 +5,5 @@ RUN apt-get install -y make
 RUN apt-get install -y g++
 WORKDIR /opt/webserver
 COPY . /opt/webserver
-RUN make clean && make
-CMD tar -cf - web-server
+RUN make clean && make && make supervisor
+CMD tar -cf - web-server supervisor

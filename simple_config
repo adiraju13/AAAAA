@@ -1,6 +1,6 @@
 port 2020;
 num_threads 5;
-path /another_path EchoHandler;
+path /echo EchoHandler;
 path /static StaticHandler {
  root ./public;
  }
@@ -9,5 +9,4 @@ path / ProxyHandler {
  }
 path /status StatusHandler {}
 path /location LocationHandler {}
-path /demo SwitchConfigOne;
 default NotFoundHandler;

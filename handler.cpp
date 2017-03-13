@@ -20,58 +20,6 @@ RequestHandler* RequestHandler::CreateByName(const char* type) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////// Demo Handlers  /////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////
-
-// dummy handlers to help us write to config
-RequestHandler::Status SwitchConfigOne::Init(const std::string& uri_prefix, const NginxConfig& config) {
-    return RequestHandler::PASS;
-}
-RequestHandler::Status SwitchConfigTwo::Init(const std::string& uri_prefix, const NginxConfig& config) {
-    return RequestHandler::PASS;
-}
-
-RequestHandler::Status SwitchConfigOne::HandleRequest(const Request& request, Response* response){
-    // overwrite old file
-    std::ofstream file("simple_config", std::ios_base::trunc);
-    file << "port 2020;" << std::endl;
-    file << "num_threads 5;" << std::endl;
-    file << "path /echo EchoHandler {}" << std::endl;
-    file << "path /static StaticHandler {\n root ./public;\n }" << std::endl;
-    file << "path / ProxyHandler {\n host ucla.edu;\n }" << std::endl;
-    file << "path /demo SwitchConfigTwo {}" << std::endl;
-    file << "path /status StatusHandler {}" << std::endl;
-    file << "path /location LocationHandler {}" << std::endl;
-    file << "default NotFoundHandler {}" << std::endl;
-
-    response->SetStatus(Response::OK);
-    response->AddHeader("Content-Length", std::to_string(request.raw_request().size() - 4));
-    response->AddHeader("Content-Type", "text/plain");
-    response->SetBody("Switched to config one");
-    return RequestHandler::PASS;
-}
-
-RequestHandler::Status SwitchConfigTwo::HandleRequest(const Request& request, Response* response){
-    // overwrite old file
-    std::ofstream file("simple_config", std::ios_base::trunc);
-    file << "port 2020;" << std::endl;
-    file << "num_threads 5;" << std::endl;
-    file << "path /another_path EchoHandler;" << std::endl;
-    file << "path /static StaticHandler {\n root ./public;\n }" << std::endl;
-    file << "path / ProxyHandler {\n host ucla.edu;\n }" << std::endl;
-    file << "path /status StatusHandler {}" << std::endl;
-    file << "path /location LocationHandler {}" << std::endl;
-    file << "path /demo SwitchConfigOne;" << std::endl;
-    file << "default NotFoundHandler;" << std::endl;
-
-    response->SetStatus(Response::OK);
-    response->AddHeader("Content-Length", std::to_string(request.raw_request().size() - 4));
-    response->AddHeader("Content-Type", "text/plain");
-    response->SetBody("Switched to config two");
-    return RequestHandler::PASS;
-}
-
-//////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////// Blocking Handler  /////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
 

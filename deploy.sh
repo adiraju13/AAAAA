@@ -5,6 +5,7 @@ docker build -t httpserver.build .
 docker run httpserver.build > binary.tar
 tar -xf binary.tar
 mv web-server deploy
+mv supervisor deploy
 
 # build shrunk image and save it
 docker build -t httpserver deploy

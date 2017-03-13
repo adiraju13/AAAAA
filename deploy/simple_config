@@ -1,28 +1,12 @@
-# This is a comment
 port 2020;
 num_threads 5;
-
+path /echo EchoHandler;
 path /static StaticHandler {
-  root ./public;
-}
-
+ root ./public;
+ }
 path / ProxyHandler {
-	# host www.yahoo.com;
-	# host www.ucla.edu;
-	 host ucla.edu;
-	# host www.google.com;
-	# host google.com;
-
-	# port 2020;
-}
-
-path /echo EchoHandler {}
-
+ host ucla.edu;
+ }
 path /status StatusHandler {}
-
-path /block BlockingHandler {}
-
-path /location LocationHandler{}
-
-# Default response handler if no handlers match.
-default NotFoundHandler {}
+path /location LocationHandler {}
+default NotFoundHandler;
