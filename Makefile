@@ -1,4 +1,4 @@
-LDFLAGS=-static-libgcc -static-libstdc++ -pthread -Wl,-Bstatic -lboost_system -lboost_thread
+LDFLAGS=-static-libgcc -static-libstdc++ -pthread -Wl,-Bstatic -lboost_system -lboost_thread  -lboost_regex -lboost_iostreams
 CXXFLAGS=-Wall -Werror -std=c++11 -fprofile-arcs -ftest-coverage
 
 # directory locations
@@ -17,10 +17,10 @@ REQUEST_TEST=test/http_request_test.cpp
 RESPONSE_TEST=test/http_response_test.cpp
 RESPONSE_PARSER_TEST=test/response_parser_test.cpp
 
-OBJECT_FILES=http_request.o http_response.o utils.o config_parser.o handler.o response_parser.o
+OBJECT_FILES=markdown.o markdown-tokens.o http_request.o http_response.o utils.o config_parser.o handler.o response_parser.o 
 
 all: server.o session.o main.o config_parser.o markdown.o markdown-tokens.o utils.o http_request.o http_response.o handler.o response_parser.o
-	g++ -o web-server main.o server.o session.o config_parser.o markdown.o markdown-tokens.o utils.o http_request.o http_response.o handler.o response_parser.o $(LDFLAGS) $(CXXFLAGS) -lboost_regex -lboost_iostreams
+	g++ -o web-server main.o server.o session.o config_parser.o markdown.o markdown-tokens.o utils.o http_request.o http_response.o handler.o response_parser.o $(LDFLAGS) $(CXXFLAGS)
 
 server.o: server.cpp server.h
 	g++ -c server.cpp $(LDFLAGS) $(CXXFLAGS)
@@ -55,7 +55,7 @@ handler.o: handler.h handler.cpp
 response_parser.o: response_parser.h response_parser.cpp
 	g++ -c response_parser.cpp $(LDFLAGS) $(CXXFLAGS)
 
-.PHONY: clean, all, test, deploy
+.PHONY: clean all test deploy
 
 deploy:
 	./deploy.sh
@@ -75,8 +75,8 @@ test:
 	g++ -isystem ${GTEST_DIR}/include ${PARSER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a $(OBJECT_FILES) -o config_parser_test ${LDFLAGS} ${CXXFLAGS}
 	g++ -isystem ${GTEST_DIR}/include ${SERVER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a $(OBJECT_FILES) -o server_test ${LDFLAGS} ${CXXFLAGS}
 	g++ -isystem ${GTEST_DIR}/include ${HANDLER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a $(OBJECT_FILES) -o handler_test ${LDFLAGS} ${CXXFLAGS}
-	g++ -isystem ${GTEST_DIR}/include ${REQUEST_TEST}   ${GTEST_DIR}/src/gtest_main.cc libgtest.a ${OBJECT_FILES} -o  http_request_test ${LDFLAGS} ${CXXFLAGS}
-	g++ -isystem ${GTEST_DIR}/include ${RESPONSE_TEST}    ${GTEST_DIR}/src/gtest_main.cc libgtest.a ${OBJECT_FILES} -o  http_response_test ${LDFLAGS} ${CXXFLAGS}
+	g++ -isystem ${GTEST_DIR}/include ${REQUEST_TEST}  ${GTEST_DIR}/src/gtest_main.cc libgtest.a ${OBJECT_FILES} -o  http_request_test ${LDFLAGS} ${CXXFLAGS}
+	g++ -isystem ${GTEST_DIR}/include ${RESPONSE_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a ${OBJECT_FILES} -o  http_response_test ${LDFLAGS} ${CXXFLAGS}
 	g++ -isystem ${GTEST_DIR}/include ${RESPONSE_PARSER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a ${OBJECT_FILES} -o response_parser_test ${LDFLAGS} ${CXXFLAGS}
 
 	# Run Tests
