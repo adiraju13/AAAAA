@@ -1,0 +1,12 @@
+port 8009;
+num_threads 5;
+path /echo EchoHandler;
+path /static StaticHandler {
+ root ./public;
+ }
+path / ProxyHandler {
+ host ucla.edu;
+ }
+path /status StatusHandler {}
+path /location LocationHandler {}
+default NotFoundHandler;
