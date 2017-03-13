@@ -249,10 +249,11 @@ bool StatusHandler::addHandlerMapping() {
 //Adds the handler names mapping and handler response to reqeust mapping that were created above
 //to the message response body and creates the response object.
 RequestHandler::Status StatusHandler::HandleRequest(const Request& request, Response* response) {
+    map_of_request_and_responses.clear();
+    map_of_uri_to_handler.clear();
     if (!addHandledRequests() || !addHandlerMapping()){
         return RequestHandler::FAIL;
     }
-
     std::cout << "\nStatusHandler::HandleRequest" << std::endl;
 
     std::string to_send;
@@ -441,3 +442,75 @@ RequestHandler::Status ProxyHandler::HandleRequest(const Request& request, Respo
     }
     return RequestHandler::PASS;
 }
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////// Location Handler /////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+
+RequestHandler::Status LocationHandler::Init(const std::string& uri_prefix, const NginxConfig& config) {
+    return RequestHandler::PASS;
+}
+
+RequestHandler::Status LocationHandler::HandleRequest(const Request& request, Response* response) {
+    std::ifstream infile("location_log.txt");
+
+    if (!infile.is_open())
+        return RequestHandler::FAIL;
+
+    location_frequency.clear();
+
+    std::string ip_address;
+    while (infile >> ip_address)
+    {
+        ProxyHandler ph;
+        std::unique_ptr<Response> returned_ptr = ph.get_response("/" + ip_address + "/geo", "ipinfo.io" ,"80");
+        update_map(returned_ptr->GetBody());
+    }
+
+    infile.close();
+
+    std::string response_body = parse_map();
+
+    response->SetStatus(Response::OK);
+    response->AddHeader("Content-Length", std::to_string(response_body.size()));
+    response->AddHeader("Content-Type", "text/plain");
+    response->SetBody(response_body);
+
+    return RequestHandler::PASS;
+}
+
+std::string LocationHandler::parse_map(){
+    std::string output = "";
+    for (auto &pairing: location_frequency){
+        output += pairing.first + ": ";
+        for (int i = 0; i < pairing.second; i++)
+            output+= "*";
+        output+= "\n";
+    }
+    return output;
+} 
+
+std::string LocationHandler::update_map(std::string response_body)
+{
+    std::size_t pos = response_body.find("region");
+    if (pos == std::string::npos)
+        return "";
+
+    std::string state = response_body.substr(pos + 9);
+    std::size_t find_end_pos = state.find('\n');
+    state = state.substr(0, find_end_pos);
+    //removes the quotes and commas form the string
+    state.erase(std::remove(state.begin(), state.end(), '\"'), state.end());
+    state.erase(std::remove(state.begin(), state.end(), ','), state.end());
+
+    if (location_frequency.count(state)){
+        location_frequency[state] = location_frequency[state] + 1;
+    }
+    else{
+        location_frequency[state] = 1;
+     }
+     return state;
+
+}
+

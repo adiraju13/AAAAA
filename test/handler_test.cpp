@@ -90,3 +90,20 @@ TEST(ProxyHandlerTest, ProxyClassTest) {
   reg_output.substr(reg_output.find("\r\n\r\n"));
   EXPECT_EQ(proxy_output, reg_output);
 }
+
+TEST(LocationHandlerTest, LocationClassTest) {
+
+  std::unique_ptr<LocationHandler> handler(new LocationHandler); 
+
+  std::string test_string_one = handler->update_map("{\n\t\"empty-string\"\n}");
+  EXPECT_EQ(test_string_one, "");
+  std::string test_string_two = handler->update_map("{\n\t\"info\": \"blah\"\n\t\"region\": \"California\"\n\t\"country\": \"US\"\n}");
+  EXPECT_EQ(test_string_two, "California");
+  std::string test_string_three = handler->update_map("{\n\t\"info\": \"blah\"\n\t\"region\": \"New York\"\n\t\"country\": \"US\"\n}");
+  EXPECT_EQ(test_string_three, "New York");
+
+  std::string output_string = handler->parse_map();
+  EXPECT_EQ(output_string, "New York: *\nCalifornia: *\n");
+
+}
+
