@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "handler.h"
 #include <fstream>
+#include <iostream>
 
 namespace utils {
 
@@ -8,14 +9,13 @@ namespace utils {
 ServerInfo setup_info_struct(NginxConfig config) {
 
     ServerInfo info;
-    info.port = -1;
 
-    int num_statements = config.statements_.size();
     //map of uri handlers to names
     std::map<std::string, std::string> handlers_for_status;
     std::string status_uri;
+
     // parse away our config file into info struct
-    for (int i = 0; i < num_statements; i++) {
+    for (unsigned int i = 0; i < config.statements_.size(); i++) {
 
         std::string curr_statement = config.statements_[i]->tokens_[0];
 
@@ -73,6 +73,19 @@ void writeHandlersToFile(std::map<std::string, std::string>handler_names){
         f.write(to_write.c_str(), to_write.length());
     }
     f.close();
+}
+
+// returns true if info object is valid server config
+bool is_valid(ServerInfo info) {
+    if (info.port < 0) {
+        std::cerr << "Port number was not specified in config\n";
+        return false;
+    } else if (info.handler_map.empty()) {
+        std::cerr << "No handlers were specified for server\n";
+        return false;
+    }
+
+    return true;
 }
 
 
