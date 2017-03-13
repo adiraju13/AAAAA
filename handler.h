@@ -170,7 +170,7 @@ public:
 private:
     //uri_prefix specified by the config file exposed to users
     std::string uri_prefix;
-    
+
     std::string m_host;
 
     std::string m_port = "80";

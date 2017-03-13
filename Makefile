@@ -17,7 +17,7 @@ REQUEST_TEST=test/http_request_test.cpp
 RESPONSE_TEST=test/http_response_test.cpp
 RESPONSE_PARSER_TEST=test/response_parser_test.cpp
 
-OBJECT_FILES=markdown.o markdown-tokens.o http_request.o http_response.o utils.o config_parser.o handler.o response_parser.o 
+OBJECT_FILES=markdown.o markdown-tokens.o http_request.o http_response.o utils.o config_parser.o handler.o response_parser.o
 
 all: server.o session.o main.o config_parser.o markdown.o markdown-tokens.o utils.o http_request.o http_response.o handler.o response_parser.o
 	g++ -o web-server main.o server.o session.o config_parser.o markdown.o markdown-tokens.o utils.o http_request.o http_response.o handler.o response_parser.o $(LDFLAGS) $(CXXFLAGS)
@@ -60,9 +60,16 @@ response_parser.o: response_parser.h response_parser.cpp
 deploy:
 	./deploy.sh
 
-test:
-	# Build web-server for integration test
-	make
+run: all supervisor
+	./supervisor simple_config
+
+supervisor: supervisor.o config_parser.o markdown.o markdown-tokens.o utils.o http_request.o http_response.o handler.o response_parser.o
+	g++ -o supervisor supervisor.o config_parser.o markdown.o markdown-tokens.o utils.o http_request.o http_response.o handler.o response_parser.o $(LDFLAGS) $(CXXFLAGS)
+
+supervisor.o: supervisor.cpp
+	g++ -c supervisor.cpp $(LDFLAGS) $(CXXFLAGS)
+
+test: all
 	# Build gtest
 	g++ -std=c++0x -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -pthread -c ${GTEST_DIR}/src/gtest-all.cc
 	ar -rv libgtest.a gtest-all.o
@@ -88,6 +95,7 @@ test:
 	python2 integration_multithread_test.py
 	python2 proxy_test.py
 	python2 nthreads_test.py 5
+
 clean:
 	# Note: be careful of make clean removing *_test
 	rm -f *.o *.gcno *.gcov *.gcda web-server *_test

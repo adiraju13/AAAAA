@@ -7,7 +7,7 @@
 
 // server info struct
 struct ServerInfo {
-    short port;
+    short port = -1;
 
     // default value
     size_t num_threads = 6;
@@ -21,6 +21,10 @@ namespace utils {
 
     // returns a struct containing all config info nicely parsed
     ServerInfo setup_info_struct(NginxConfig config);
+
+    // returns true if server info struct contains correct fields
+    bool is_valid(ServerInfo info);
+
     void writeHandlersToFile(std::map<std::string, std::string>handler_names);
 }
 

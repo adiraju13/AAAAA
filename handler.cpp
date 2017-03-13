@@ -489,7 +489,7 @@ std::string LocationHandler::parse_map(){
         output+= "\n";
     }
     return output;
-} 
+}
 
 std::string LocationHandler::update_map(std::string response_body)
 {
