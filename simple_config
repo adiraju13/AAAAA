@@ -1,22 +1,13 @@
-#This is a comment
 port 2020;
 num_threads 5;
-
+path /another_path EchoHandler;
 path /static StaticHandler {
-  root ./public;
-}
-
+ root ./public;
+ }
 path / ProxyHandler {
-	 host ucla.edu;
-}
-
-path /echo EchoHandler {}
-
+ host ucla.edu;
+ }
 path /status StatusHandler {}
-
-path /block BlockingHandler {}
-
-path /location LocationHandler{}
-
-# Default response handler if no handlers match.
-default NotFoundHandler {}
+path /location LocationHandler {}
+path /demo SwitchConfigOne;
+default NotFoundHandler;

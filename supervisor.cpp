@@ -104,6 +104,7 @@ int main(int argc, char* argv[]) {
                         std::string arg(argv[1]);
                         cmd += arg;
                         system(cmd.c_str());
+                        exit(0);
                     }
 
                     // else continue listening for file change events...

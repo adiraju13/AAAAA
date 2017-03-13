@@ -170,7 +170,7 @@ public:
 private:
     //uri_prefix specified by the config file exposed to users
     std::string uri_prefix;
-    
+
     std::string m_host;
 
     std::string m_port = "80";
@@ -200,6 +200,26 @@ private:
 };
 
 REGISTER_REQUEST_HANDLER(LocationHandler);
+
+// one of two handler that writes to config file hardcoded for demo
+class SwitchConfigOne : public RequestHandler {
+public:
+    SwitchConfigOne() {}
+    Status Init(const std::string& uri_prefix, const NginxConfig& config);
+    Status HandleRequest(const Request& request,
+                         Response* response);
+};
+REGISTER_REQUEST_HANDLER(SwitchConfigOne);
+
+// one of two handler that writes to config file hardcoded for demo
+class SwitchConfigTwo : public RequestHandler {
+public:
+    SwitchConfigTwo() {}
+    Status Init(const std::string& uri_prefix, const NginxConfig& config);
+    Status HandleRequest(const Request& request,
+                         Response* response);
+};
+REGISTER_REQUEST_HANDLER(SwitchConfigTwo);
 
 
 #endif
