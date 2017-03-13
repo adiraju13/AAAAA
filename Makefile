@@ -60,6 +60,9 @@ response_parser.o: response_parser.h response_parser.cpp
 deploy:
 	./deploy.sh
 
+run:
+	./web-server simple_config
+
 test:
 	# Build web-server for integration test
 	make
