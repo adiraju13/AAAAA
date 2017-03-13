@@ -190,10 +190,12 @@ public:
     Status HandleRequest(const Request& request,
                          Response* response);
 
+    //made public for testing purposes!
+    std::string update_map(std::string response);
+    std::string parse_map();
+
 private:
   std::unordered_map<std::string, int> location_frequency;
-  void update_map(std::string response);
-  std::string parse_map();
 
 };
 
