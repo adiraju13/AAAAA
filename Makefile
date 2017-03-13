@@ -61,7 +61,7 @@ deploy:
 	./deploy.sh
 
 run: all supervisor
-	./supervisor simple_config
+	./supervisor demo_config
 
 supervisor: supervisor.o config_parser.o markdown.o markdown-tokens.o utils.o http_request.o http_response.o handler.o response_parser.o
 	g++ -o supervisor supervisor.o config_parser.o markdown.o markdown-tokens.o utils.o http_request.o http_response.o handler.o response_parser.o $(LDFLAGS) $(CXXFLAGS)
